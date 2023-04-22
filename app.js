@@ -1,26 +1,52 @@
-const { error } = require('console');
+// const { error } = require('console');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = 3000;
 
-const server = http.createServer((req, res) => {
-     console.log('Server request!')
-     console.log(req.url, req.method)
+const server = http.createServer((req, resp) => {
+    console.log("Server request");
 
-     res.setHeader('Content-Type', 'application/json')
+    resp.setHeader('Content-Type', 'text/html');
 
-    //  res.write('<head><link rel="stylesheet" href="#"></head>') //even possible add the styles in browser via server/node) Hooray!)
-    //  res.write("<h1>Hello World!</h1>")
-    //  res.write("<p>Hello, my name is Vova!</p>")
+    const createPath = (page) => path.resolve(__dirname, 'views', `${page}.html`);
 
-    const data = JSON.stringify([
-        {name: 'Bill', age: 40},
-        {name: 'Bob', age: 30}
-    ]);
+    let basePath = '';
 
-     res.end(data)
+    switch (req.url) {
+        case '/':
+        case '/home':
+        case '/index.html':
+            basePath = createPath('index');
+            break;
+        case '/about-us':
+            resp.statusCode = 301;
+            resp.setHeader('Location', '/contacts');
+            resp.end();
+            break;
+        case '/contacts':
+            basePath = createPath('contacts');
+            break;
+        default:
+            basePath = createPath('error');
+            resp.statusCode = 404;
+            break;
+    }
+
+    fs.readFile(basePath, (err, data) => {
+        if (err) {
+            resp.statusCode = 500;
+            console.log(err);
+            resp.end();
+        } else {
+            resp.write(data);
+            resp.end();
+        }
+    })
+
 })
 
 server.listen(PORT, 'localhost', (error) => {
-    error ? console.log(error) : console.log(`listening port ${PORT}`)
+    error ? console.log(error) : console.log(`Listening Port ${PORT}`)
 })
