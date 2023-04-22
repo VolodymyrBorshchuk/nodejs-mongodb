@@ -1,24 +1,26 @@
-const fs = require('fs')
-const zlib = require('zlib')
+const { error } = require('console');
+const http = require('http');
 
-const readStream = fs.createReadStream('./documents/text.txt');
-const writeStream = fs.createWriteStream('./documents/new-text.txt')
-const compressStream = zlib.createGzip()
+const PORT = 3000;
 
-// readStream.on('data', (chunk) => {
-//     writeStream.write(`\n---CHUNK START---\n`)
-//     writeStream.write(chunk)
-//     writeStream.write(`\n---CHUNK END---\n`)
-// })
+const server = http.createServer((req, res) => {
+     console.log('Server request!')
+     console.log(req.url, req.method)
 
-const handleError = () => {
-    console.log("Error")
-    readStream.destroy();
-    writeStream.end('Finishedd with error');
-}
+     res.setHeader('Content-Type', 'application/json')
 
-readStream
-    .on('error', handleError)
-    .pipe(compressStream)
-    .pipe(writeStream)
-    .on('error', handleError)
+    //  res.write('<head><link rel="stylesheet" href="#"></head>') //even possible add the styles in browser via server/node) Hooray!)
+    //  res.write("<h1>Hello World!</h1>")
+    //  res.write("<p>Hello, my name is Vova!</p>")
+
+    const data = JSON.stringify([
+        {name: 'Bill', age: 40},
+        {name: 'Bob', age: 30}
+    ]);
+
+     res.end(data)
+})
+
+server.listen(PORT, 'localhost', (error) => {
+    error ? console.log(error) : console.log(`listening port ${PORT}`)
+})
